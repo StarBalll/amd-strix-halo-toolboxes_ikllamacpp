@@ -29,12 +29,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push ROCm 7.2 image
-        run: |
-          cd toolboxes
-          docker build --no-cache -f Dockerfile.rocm-7.2 -t starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2 .
-          docker tag starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2 starballl/amd-strix-halo-toolboxes_ikllamacpp:latest
-          docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2
-          docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:latest
+        run: cd toolboxes && docker build --no-cache -f Dockerfile.rocm-7.2 -t starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2 . && docker tag starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2 starballl/amd-strix-halo-toolboxes_ikllamacpp:latest && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2 && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:latest
 
       - name: Image digest
-        run: echo "Built image: starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2"
+        run: echo "Built image starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2"
