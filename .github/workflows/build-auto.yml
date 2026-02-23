@@ -12,11 +12,7 @@ jobs:
       - name: Free up runner disk space
         run: |
           echo "Before cleanup:" && df -h /
-          sudo rm -rf \
-            /usr/share/dotnet \
-            /usr/local/lib/android \
-            /opt/ghc \
-            /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
           docker system prune --all --force
           docker builder prune --all --force
           echo "After cleanup:" && df -h /
@@ -33,14 +29,12 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push ROCm 7.2 image
-        working-directory: toolboxes
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.rocm-7.2
-          push: true
-          tags: "starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2,starballl/amd-strix-halo-toolboxes_ikllamacpp:latest"
-          no-cache: true
+        run: |
+          cd toolboxes
+          docker build --no-cache -f Dockerfile.rocm-7.2 -t starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2 .
+          docker tag starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2 starballl/amd-strix-halo-toolboxes_ikllamacpp:latest
+          docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2
+          docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:latest
 
       - name: Image digest
-        run: "echo Built image: starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2"
+        run: echo "Built image: starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2"
