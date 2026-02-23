@@ -1,9 +1,19 @@
 # build stage
 FROM fedora:43 AS builder
 
+# install ca-certificates first for HTTPS access
+RUN dnf install -y ca-certificates
+
 # rocm 7.2 repo
-RUN dnf install -y dnf-plugins-core && \
-    dnf config-manager --add-repo https://repo.radeon.com/rocm/rhel10/7.2/main/rocm.repo
+RUN tee /etc/yum.repos.d/rocm.repo <<'REPO'
+[ROCm-7.2]
+name=ROCm7.2
+baseurl=https://repo.radeon.com/rocm/rhel10/7.2/main
+enabled=1
+priority=50
+gpgcheck=1
+gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
+REPO
 
 # deps
 RUN dnf -y --nodocs --setopt=install_weak_deps=False \
@@ -57,9 +67,19 @@ RUN chmod +x /usr/local/bin/gguf-vram-estimator.py
 # runtime stage
 FROM quay.io/fedora/fedora-minimal:43
 
+# install ca-certificates first for HTTPS access
+RUN microdnf install -y ca-certificates
+
 # rocm 7.2 repo
-RUN dnf install -y dnf-plugins-core && \
-    dnf config-manager --add-repo https://repo.radeon.com/rocm/rhel10/7.2/main/rocm.repo
+RUN tee /etc/yum.repos.d/rocm.repo <<'REPO'
+[ROCm-7.2]
+name=ROCm7.2
+baseurl=https://repo.radeon.com/rocm/rhel10/7.2/main
+enabled=1
+priority=50
+gpgcheck=1
+gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
+REPO
 
 # runtime deps
 RUN microdnf -y --nodocs --setopt=install_weak_deps=0 \
