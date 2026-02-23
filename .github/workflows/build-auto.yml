@@ -9,6 +9,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Free up runner disk space
+        run: |
+          echo "Before cleanup:" && df -h /
+          sudo rm -rf \
+            /usr/share/dotnet \
+            /usr/local/lib/android \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL
+          docker system prune --all --force
+          docker builder prune --all --force
+          echo "After cleanup:" && df -h /
+
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -21,14 +33,14 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push ROCm 7.2 image
+        working-directory: toolboxes
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./toolboxes/Dockerfile.rocm-7.2
+          file: ./Dockerfile.rocm-7.2
           push: true
           tags: "starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2,starballl/amd-strix-halo-toolboxes_ikllamacpp:latest"
-          cache-from: "type=gha"
-          cache-to: "type=gha,mode=max"
+          no-cache: true
 
       - name: Image digest
         run: "echo Built image: starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2"
