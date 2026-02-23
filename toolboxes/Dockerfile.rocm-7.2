@@ -55,7 +55,7 @@ COPY toolboxes/gguf-vram-estimator.py /usr/local/bin/gguf-vram-estimator.py
 RUN chmod +x /usr/local/bin/gguf-vram-estimator.py
 
 # runtime stage
-FROM fedora-minimal:43
+FROM quay.io/fedora/fedora-minimal:43
 
 # rocm 7.2 repo
 RUN dnf install -y dnf-plugins-core && \
