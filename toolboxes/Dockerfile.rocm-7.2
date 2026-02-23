@@ -4,11 +4,11 @@ FROM fedora:43 AS builder
 # install ca-certificates first for HTTPS access
 RUN dnf install -y ca-certificates
 
-# rocm 7.2 repo
+# rocm 7.2 repo (RHEL 10.x)
 RUN tee /etc/yum.repos.d/rocm.repo <<'REPO'
 [ROCm-7.2]
-name=ROCm7.2
-baseurl=https://repo.radeon.com/rocm/rhel10/7.2/main
+name=ROCm 7.2.0 repository
+baseurl=https://repo.radeon.com/rocm/el10/7.2/main
 enabled=1
 priority=50
 gpgcheck=1
@@ -70,11 +70,11 @@ FROM quay.io/fedora/fedora-minimal:43
 # install ca-certificates first for HTTPS access
 RUN microdnf install -y ca-certificates
 
-# rocm 7.2 repo
+# rocm 7.2 repo (RHEL 10.x)
 RUN tee /etc/yum.repos.d/rocm.repo <<'REPO'
 [ROCm-7.2]
-name=ROCm7.2
-baseurl=https://repo.radeon.com/rocm/rhel10/7.2/main
+name=ROCm 7.2.0 repository
+baseurl=https://repo.radeon.com/rocm/el10/7.2/main
 enabled=1
 priority=50
 gpgcheck=1
