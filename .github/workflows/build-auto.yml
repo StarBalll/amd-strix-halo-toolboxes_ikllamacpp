@@ -26,11 +26,9 @@ jobs:
           context: .
           file: ./toolboxes/Dockerfile.rocm-7.2
           push: true
-          tags: |
-            starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2
-            starballl/amd-strix-halo-toolboxes_ikllamacpp:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: "starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2,starballl/amd-strix-halo-toolboxes_ikllamacpp:latest"
+          cache-from: "type=gha"
+          cache-to: "type=gha,mode=max"
 
       - name: Image digest
-        run: echo "Built image: starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2"
+        run: "echo Built image: starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7.2"
