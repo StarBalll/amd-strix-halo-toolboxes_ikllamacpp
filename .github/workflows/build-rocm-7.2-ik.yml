@@ -1,4 +1,4 @@
-name: Build and Push ROCm Nightlies IK Docker Image
+name: Build ROCm 7.2 (ik_llama.cpp)
 
 on:
   workflow_dispatch:
@@ -26,8 +26,8 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push ROCm Nightlies IK image
-        run: cd toolboxes && docker build --no-cache -f Dockerfile.rocm7-nightlies-ik-llama -t starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7-nightlies-ik . && docker tag starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7-nightlies-ik starballl/amd-strix-halo-toolboxes_ikllamacpp:latest-rocm7-nightlies-ik && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7-nightlies-ik && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:latest-rocm7-nightlies-ik
+      - name: Build and push
+        run: cd toolboxes && docker build --no-cache -f Dockerfile.rocm-7.2-ik -t starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm-7.2-ik . && docker tag starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm-7.2-ik starballl/amd-strix-halo-toolboxes_ikllamacpp:latest && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm-7.2-ik && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:latest
 
       - name: Image digest
-        run: echo "Built image starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm7-nightlies-ik"
+        run: echo "Built starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm-7.2-ik"

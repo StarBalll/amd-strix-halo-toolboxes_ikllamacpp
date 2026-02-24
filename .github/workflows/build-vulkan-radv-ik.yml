@@ -1,4 +1,4 @@
-name: Build and Push Vulkan RADV IK Docker Image
+name: Build Vulkan RADV (ik_llama.cpp)
 
 on:
   workflow_dispatch:
@@ -26,8 +26,8 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Vulkan RADV IK image
-        run: cd toolboxes && docker build --no-cache -f Dockerfile.vulkan-radv-ik-llama -t starballl/amd-strix-halo-toolboxes_ikllamacpp:vulkan-radv-ik . && docker tag starballl/amd-strix-halo-toolboxes_ikllamacpp:vulkan-radv-ik starballl/amd-strix-halo-toolboxes_ikllamacpp:latest-vulkan-radv-ik && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:vulkan-radv-ik && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:latest-vulkan-radv-ik
+      - name: Build and push
+        run: cd toolboxes && docker build --no-cache -f Dockerfile.vulkan-radv-ik-llama -t starballl/amd-strix-halo-toolboxes_ikllamacpp:vulkan-radv-ik . && docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:vulkan-radv-ik
 
       - name: Image digest
-        run: echo "Built image starballl/amd-strix-halo-toolboxes_ikllamacpp:vulkan-radv-ik"
+        run: echo "Built starballl/amd-strix-halo-toolboxes_ikllamacpp:vulkan-radv-ik"
