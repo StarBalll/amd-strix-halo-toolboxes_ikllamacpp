@@ -55,28 +55,56 @@ toolbox enter llama-rocm-7.2-ik
 ### 运行推理
 
 ```sh
-# 强制使用 GPU (ROCm)
+# ROCm 后端
 llama-cli -m model.gguf -n 128 -ngl 999 -fa 1 --no-mmap
 
 # Vulkan 模式
 llama-cli -m model.gguf -n 128 -ngl 999 -fa 1
 ```
 
+### 推荐运行参数 (llama-server)
+
+```sh
+llama-server \
+  --alias qwen3-coder-next \
+  --jinja \
+  --flash-attn on \
+  -ngl 999 \
+  -c 65535 \
+  --no-mmap \
+  --host 0.0.0.0 \
+  --port 8080 \
+  -b 16384 \
+  -ub 4096 \
+  --mlock \
+  --parallel 2 \
+  --seed 3407 \
+  --temp 1.0 \
+  --top-p 0.95 \
+  --top-k 40 \
+  --min-p 0.01 \
+  -m /models/Qwen3-Coder-Next-Q4_K_M.gguf
+```
+
 ---
 
-## 重要参数
+## 重要参数说明
 
 | 参数 | 说明 |
 |------|------|
 | `-ngl 999` | 加载所有层到 GPU |
-| `-fa 1` | 启用 Flash Attention |
-| `--no-mmap` | 禁用内存映射（避免问题） |
+| `--flash-attn on` 或 `-fa 1` | 启用 Flash Attention |
+| `--no-mmap` | 禁用内存映射（避免 ROCm 问题） |
+| `-c 65535` | 最大上下文长度 |
+| `-b 16384` | batch size |
+| `-ub 4096` | ubatch size |
+| `--mlock` | 锁定内存，防止换出 |
 
 ---
 
 ## 已知问题
 
-### 1. Vulkan RADV IK - MoE 模型不兼容
+### 1. Vulkan RADV IK - MoE 模型不兼容 ⚠️
 
 **问题描述**：ik_llama.cpp 的 Vulkan 后端对 MoE (Mixture of Experts) 模型（如 Qwen3-Coder-30B-A3B）有已知 bug，会导致速度极慢或无限循环。
 
@@ -91,6 +119,10 @@ llama-cli -m model.gguf -n 128 -ngl 999 -fa 1
 **问题描述**：ROCm 7.2 安装路径为 `/opt/rocm-7.2.0`，不是传统的 `/opt/rocm`。
 
 **已修复**：所有 Dockerfile 已更新正确的路径。
+
+### 3. ik_llama.cpp Vulkan 性能
+
+**说明**：ik_llama.cpp 的 Vulkan 后端性能不如原版 ggerganov/llama.cpp，这是设计差异。ik 的优势在于 CPU 优化和 IQ 量化，而不是 Vulkan。
 
 ---
 
@@ -128,13 +160,66 @@ ik_llama.cpp 的核心优势是支持 IQ 量化类型，以下是 Qwen3-Coder-30
 
 ---
 
+## 构建要点与难点
+
+### 1. ROCm 路径问题
+
+- **问题**：ROCm 7.2 安装路径为 `/opt/rocm-7.2.0`，不是传统的 `/opt/rocm`
+- **解决**：在 Dockerfile 中设置正确的环境变量：
+  ```dockerfile
+  ENV ROCM_PATH=/opt/rocm-7.2.0
+  ENV HIP_PATH=/opt/rocm-7.2.0
+  ENV LD_LIBRARY_PATH=/opt/rocm-7.2.0/lib:/opt/rocm-7.2.0/lib64:$LD_LIBRARY_PATH
+  ```
+
+### 2. ROCm Nightly 构建
+
+- **问题**：ROCm Nightly 使用 TheRock 提供的 tarball，需要动态获取最新版本
+- **解决**：在 Dockerfile 中使用 curl 动态获取最新 tarball：
+  ```dockerfile
+  BASE="https://therock-nightly-tarball.s3.amazonaws.com"
+  PREFIX="therock-dist-linux-${GFX}-${ROCM_MAJOR_VER}"
+  KEY="$(curl -s "${BASE}?list-type=2&prefix=${PREFIX}" ... | sort -V | tail -n1)"
+  aria2c -x 16 -s 16 -j 16 "${BASE}/${KEY}" -o therock.tar.gz
+  ```
+
+### 3. 运行时环境变量
+
+- **问题**：容器运行时需要正确的 ROCm 环境变量
+- **解决**：在 Dockerfile 中添加 profile 脚本：
+  ```dockerfile
+  RUN printf '%s\n' \
+    'export ROCM_PATH=/opt/rocm-7.2.0' \
+    'export HIP_PATH=/opt/rocm-7.2.0' \
+    > /etc/profile.d/rocm.sh \
+    && chmod +x /etc/profile.d/rocm.sh
+  ```
+
+### 4. ik_llama.cpp 与原版的差异
+
+- **问题**：ik_llama.cpp 的 Vulkan 后端性能不如原版，且对 MoE 模型有 bug
+- **说明**：这是 ik_llama.cpp 本身的设计取向，主要优化 CPU 性能和 IQ 量化
+- **建议**：根据需求选择合适的镜像
+
+### 5. Docker Hub 权限
+
+- **问题**：构建时需要 Docker Hub 推送权限
+- **解决**：在 GitHub Secrets 中配置：
+  - `DOCKER_USERNAME`：Docker Hub 用户名
+  - `DOCKER_PASSWORD`：具有 Write 权限的 Access Token
+
+---
+
 ## 本地构建
 
 ```bash
 # 构建特定镜像
 docker build -f toolboxes/Dockerfile.rocm-7.2-ik -t my-image .
 
-# 构建所有镜像（需要 GitHub Actions）
+# 构建并推送（需要登录）
+docker login
+docker build -f toolboxes/Dockerfile.rocm-7.2-ik -t starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm-7.2-ik .
+docker push starballl/amd-strix-halo-toolboxes_ikllamacpp:rocm-7.2-ik
 ```
 
 ---
