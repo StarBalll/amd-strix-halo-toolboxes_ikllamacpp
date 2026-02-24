@@ -49,6 +49,7 @@ RUN git clean -xdf \
   -DAMDGPU_TARGETS=gfx1151 \
   -DCMAKE_BUILD_TYPE=Release \
   -DGGML_RPC=ON \
+  -DGGML_CUDA=ON \
   -DLLAMA_HIP_UMA=ON \
   -DGGML_HIP_ROCWMMA_FATTN=ON \
   -DROCM_PATH=/opt/rocm-7.2.0 \
