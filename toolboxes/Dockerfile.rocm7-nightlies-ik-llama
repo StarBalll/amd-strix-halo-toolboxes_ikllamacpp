@@ -69,7 +69,6 @@ RUN cmake -S . -B build \
   -DCMAKE_BUILD_TYPE=Release \
   -DGGML_RPC=ON \
   -DLLAMA_HIP_UMA=ON \
-  -DGGML_HIP_ROCWMMA_FATTN=ON \
   && cmake --build build --config Release -- -j$(nproc) \
   && cmake --install build --config Release
 
